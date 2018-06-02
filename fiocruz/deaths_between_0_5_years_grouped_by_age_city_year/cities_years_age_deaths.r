@@ -16,22 +16,22 @@ queryMortality <- '{
     "filtered": {
       "query": {
         "query_string": {
-          "analyze_wildcard": true,
-          "query": "*"
+          "query": "*",
+          "analyze_wildcard": true
         }
       },
       "filter": {
         "bool": {
           "must": [
             {
-              "$state": {
-                "store": "globalState"
-              },
               "range": {
                 "idade_obito": {
                   "gte": 0,
                   "lt": 5
                 }
+              },
+              "$state": {
+                "store": "globalState"
               }
             }
           ],
@@ -53,7 +53,7 @@ queryMortality <- '{
       "aggs": {
         "3": {
           "terms": {
-            "field": "ano_obito",
+            "field": "res_codmun_adotado",
             "size": 0,
             "order": {
               "_count": "desc"
@@ -62,10 +62,21 @@ queryMortality <- '{
           "aggs": {
             "4": {
               "terms": {
-                "field": "idade_obito",
+                "field": "ano_obito",
                 "size": 0,
                 "order": {
                   "_count": "desc"
+                }
+              },
+              "aggs": {
+                "5": {
+                  "terms": {
+                    "field": "idade_obito",
+                    "size": 0,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  }
                 }
               }
             }
