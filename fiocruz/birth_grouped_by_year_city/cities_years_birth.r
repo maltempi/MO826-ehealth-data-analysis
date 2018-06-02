@@ -31,10 +31,21 @@ queryMortality <- '{
       "aggs": {
         "3": {
           "terms": {
-            "field": "ano_nasc",
+            "field": "res_codmun_adotado",
             "size": 0,
             "order": {
               "_count": "desc"
+            }
+          },
+          "aggs": {
+            "4": {
+              "terms": {
+                "field": "ano_nasc",
+                "size": 0,
+                "order": {
+                  "_count": "desc"
+                }
+              }
             }
           }
         }
