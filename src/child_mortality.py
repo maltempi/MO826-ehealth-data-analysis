@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random
+import scipy.stats as stats
+import scipy.interpolate as interpolate
+import pylab
 
 CSV_KEYS_PRENATAL = {
     'percentageKey': 'Percentual de gestantes com sete ou mais consultas de pré-natal / ano',
@@ -79,7 +82,7 @@ def getMortalityRate(birthData, prenatalData, deathsData, ibgeCodesToUse):
             prenatalData[CSV_KEYS_PRENATAL['cityCode']] == ibgeCode)]
 
         if (birthsSet.empty or deathsSet.empty or prenatalSet.empty):
-            print('no good data.. birth:', birthsSet.empty, 'deaths: ', deathsSet.empty, 'prenatal: ', prenatalSet.empty)
+            # print('no good data.. birth:', birthsSet.empty, 'deaths: ', deathsSet.empty, 'prenatal: ', prenatalSet.empty)
             continue
 
         try:
@@ -89,7 +92,7 @@ def getMortalityRate(birthData, prenatalData, deathsData, ibgeCodesToUse):
             continue
 
         if (numberOfBirths == 0):
-            print('no good data... number of births is zero')
+            # print('no good data... number of births is zero')
             continue
 
         tabelao.append({
@@ -105,22 +108,11 @@ def getMortalityRate(birthData, prenatalData, deathsData, ibgeCodesToUse):
     return tabelao
 
 
-x = getMortalityRate(birthData, prenatalData, deathsData, ibgeCodesToUse)
+data = getMortalityRate(birthData, prenatalData, deathsData, ibgeCodesToUse)
 
-#print(x)
-
-#percentagePrenatal = [3, 40, 50, 40, 50, 50, 60, 70,
-#                      80, 90, 10, 1, 11, 11, 12, 50,
-#                      51, 52, 50, 50]
-
-#mortalityRate = [90, 30, 30, 10, 11, 15, 9, 5,
-#                 5, 1, 50, 70, 50, 30, 30, 10,
-#                 10, 9, 90, 10]
-
-
-mortalityRate = [d['mortalityRate'] for d in x]
-percentagePrenatal = [d['percentagePrenatal'] for d in x]
-cityNames = [d['cityName'] for d in x]
+mortalityRate = [d['mortalityRate'] for d in data]
+percentagePrenatal = [d['percentagePrenatal'] for d in data]
+cityNames = [d['cityName'] for d in data]
 
 def scatterplot(x_data, y_data, x_label, y_label, title):
 
@@ -135,9 +127,14 @@ def scatterplot(x_data, y_data, x_label, y_label, title):
     ax.set_title(title)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-
+    
+    # regression
+    polyfit = np.polyfit(x_data, y_data, 1)
+    plt.plot(x_data, np.polyval(polyfit, x_data))
+    
     for cityName, x, y in zip(cityNames, x_data, y_data): 
-        if (x < 40 and y > 15):
+        #if (x < 40 and y > 15):
+        if (y > 200):
             plt.annotate(
                 cityName,
                 xy=(x, y), xytext=(-15, -15),
@@ -145,14 +142,14 @@ def scatterplot(x_data, y_data, x_label, y_label, title):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
                 arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
         
-        if (x > 80 and y < 10):
+        if (x > 80 and y < 10) and False:
             plt.annotate(
                 cityName,
                 xy=(x, y), xytext=(20, 20),
                 textcoords='offset points', ha='right', va='bottom',
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
                 arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))            
-            
+
     plt.show()
 
 # # Call the function to create plot
