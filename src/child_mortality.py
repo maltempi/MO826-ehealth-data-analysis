@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from prettytable import PrettyTable
 import random
 import scipy
 import scipy.stats as stats
 import scipy.interpolate as interpolate
 import pylab
 
-YEAR_BASE = 2013
+YEAR_BASE = 2014
 DEATH_AGE = 0
 
 CSV_KEYS_PRENATAL = {
@@ -110,10 +111,14 @@ mortalityRate = []
 percentagePrenatal = []
 cityNames = []
 
+t = PrettyTable(['City', 'PercentagePrenatal', 'MortalityRate'])
 for d in data:
     mortalityRate.append(d['mortalityRate'])
     percentagePrenatal.append(d['percentagePrenatal'])
     cityNames.append(d['cityName'])
+    t.add_row([d['cityName'], d['percentagePrenatal'], '{0:.2f}'.format(d['mortalityRate'])])
+
+print(t)
 
 def scatterplot(x_data, y_data, x_label, y_label, title):
 
@@ -125,20 +130,19 @@ def scatterplot(x_data, y_data, x_label, y_label, title):
     ax.scatter(x_data, y_data, s=30, color='#539caf', alpha=0.75, label='City')
     ax.scatter(np.mean(x_data), np.mean(y_data), s=30, color='#ff0000', alpha=0.75, label='Mean')
 
-    # Label the axes and provide a title
-    ax.set_title(title)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
     
     # regression
     polyfit =np.poly1d(np.polyfit(x_data, y_data, 1))
     y_polyval = np.polyval(polyfit, x_data)
-    plt.plot(x_data, y_polyval, color='#af5f53', label='Regression')
+
+    correlation = np.corrcoef(x_data, y_data)
     
+    plt.plot(x_data, y_polyval, color='#af5f53', label='Regression')
+
     points = []
     for cityName, x, y, y_fit in zip(cityNames, x_data, y_data, y_polyval): 
         points.append((x,y))
-        if y >= 100:
+        if (y_fit >= 15 or y_fit <= 10) and False:
             plt.annotate(
                 cityName,
                 xy=(x, y), xytext=(-15, -15),
@@ -153,6 +157,10 @@ def scatterplot(x_data, y_data, x_label, y_label, title):
                 textcoords='offset points', ha='right', va='bottom',
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0),
                 arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))            
+    # Label the axes and provide a title
+    ax.set_title(title)
+    ax.set_xlabel(x_label + '\nCorrelation: {}'.format(correlation))
+    ax.set_ylabel(y_label)
 
     plt.legend()
         
