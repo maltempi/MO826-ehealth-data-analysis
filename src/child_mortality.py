@@ -54,7 +54,7 @@ deathsData[CSV_KEYS_DEATHS['numberOfDeaths']] = pd.to_numeric(deathsData[CSV_KEY
 deathsData = deathsData.loc[(deathsData[CSV_KEYS_DEATHS['deathAge']] <= DEATH_AGE)]
 
 # Retrieve the IBGE ids to use
-# 100 greatest brazilian cities 
+# 50 greatest brazilian cities 
 cityIdsToUse = [355030,330455,530010,292740,230440,310620,130260,410690,261160,431490,520870,150140,351880,350950,211130,330490,270430,330170,240810,500270,221100,354870,250750,330350,354780,354990,353440,260790,354340,317020,355220,311860,280030,291080,510340,420910,313670,411370,520140,110020,150080,320500,330330,330045,330100,320520,420540,430510,160030,352940]
 #cityIdsToUse = prenatalData[CSV_KEYS_PRENATAL['cityId']].unique()
 
@@ -62,25 +62,22 @@ def getMortalityRate(birthData, prenatalData, deathsData, cityIdsToUse, year):
     mergedData = []
     for cityId in cityIdsToUse:
         # filtering birthData by year and cityId
-        birthsSet = birthData.loc[(
-            birthData[CSV_KEYS_BIRTHS['cityId']] == cityId)]
-        birthsSet = birthsSet.loc[(
-            birthsSet[CSV_KEYS_BIRTHS['year']] == year)]
+        birthsSet = birthData.loc[
+            (birthData[CSV_KEYS_BIRTHS['cityId']] == cityId) &
+            (birthData[CSV_KEYS_BIRTHS['year']] == year)]
 
         # filtering deathsData by year and cityId
-        deathsSet = deathsData.loc[(
-            deathsData[CSV_KEYS_DEATHS['cityId']] == cityId)]
-        deathsSet = deathsSet.loc[(
-            deathsSet[CSV_KEYS_DEATHS['year']] == year)]
-        
+        deathsSet = deathsData.loc[
+            (deathsData[CSV_KEYS_DEATHS['cityId']] == cityId) &
+            (deathsData[CSV_KEYS_DEATHS['year']] == year)]
+
         # filtering prenatalData by year and cityId
-        prenatalSet = prenatalData.loc[(
-            prenatalData[CSV_KEYS_PRENATAL['cityId']] == cityId)]            
-        prenatalSet = prenatalSet.loc[(
-            prenatalData[CSV_KEYS_PRENATAL['year']] == year)]
+        prenatalSet = prenatalData.loc[
+            (prenatalData[CSV_KEYS_PRENATAL['cityId']] == cityId) & 
+            (prenatalData[CSV_KEYS_PRENATAL['year']] == year)]
 
         if (birthsSet.empty or deathsSet.empty or prenatalSet.empty):
-            # print('no good data.. birth:', birthsSet.empty, 'deaths: ', deathsSet.empty, 'prenatal: ', prenatalSet.empty)
+            print('no good data.. birth:', birthsSet.empty, 'deaths: ', deathsSet.empty, 'prenatal: ', prenatalSet.empty)
             continue
 
         try:
@@ -90,7 +87,7 @@ def getMortalityRate(birthData, prenatalData, deathsData, cityIdsToUse, year):
             continue
 
         if (numberOfBirths == 0):
-            # print('no good data... number of births is zero')
+            print('no good data... number of births is zero')
             continue
 
         mergedData.append({
@@ -118,7 +115,6 @@ def scatterplot(x_data, y_data, x_label, y_label, title):
     # regression
     polyfit =np.poly1d(np.polyfit(x_data, y_data, 1))
     y_polyval = np.polyval(polyfit, x_data)
-
     correlation = np.corrcoef(x_data, y_data)
     
     plt.plot(x_data, y_polyval, color='#af5f53', label='Regression')
@@ -140,9 +136,10 @@ def scatterplot(x_data, y_data, x_label, y_label, title):
                 xy=(x, y), xytext=(20, 20),
                 textcoords='offset points', ha='right', va='bottom',
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0),
-                arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))            
+                arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
+
     # Label the axes and provide a title
-    ax.set_title(title)
+    ax.set_title(title + '\n {} cidades analisadas'.format(len(x_data)))
     ax.set_xlabel(x_label + '\nCorrelation: {}'.format(correlation))
     ax.set_ylabel(y_label)
 
@@ -153,7 +150,8 @@ def scatterplot(x_data, y_data, x_label, y_label, title):
 def yearByYearPlot(years, mortality_rate_means, prenatal_means, title):
     _, ax = plt.subplots()
     ax.xaxis.set_major_formatter(FormatStrFormatter('%g'))
-    ax.xaxis.set_ticks(np.arange(2010, 2015))
+    ax.xaxis.set_ticks(np.arange(years[0] - 1, years[len(years) - 1] + 1))
+    plt.xticks(rotation=75)
 
     if mortality_rate_means:
         ax.set_title(title)
@@ -166,11 +164,11 @@ def yearByYearPlot(years, mortality_rate_means, prenatal_means, title):
         ax2.set_ylabel('% de grávidas com ao menos 7 pré natal', color='g')
         ax2.plot(years, prenatal_means, color='g', marker='x', label='Regression')        
         
-
     _.tight_layout()
     plt.show()
 
-years = [2010, 2011, 2012, 2013, 2014]
+#years = [2010, 2011, 2012, 2013, 2014]
+years = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014]
 mortalityMean = []
 prenatalMean = []
 
@@ -187,7 +185,7 @@ for year in years:
         cityNames.append(d['cityName'])
         t.add_row([d['cityName'], d['percentagePrenatal'], '{0:.2f}'.format(d['mortalityRate'])])
     
-#    print(t)
+    print(t)
 
     #mortalityMean.append(sum(mortalityRate) / len(mortalityRate))  
     #prenatalMean.append(sum(percentagePrenatal) / len(percentagePrenatal))
@@ -201,5 +199,5 @@ for year in years:
                 title='Taxa de Mortalidade infantil x Acesso ao prenatal ({})'.format(year))
 
 yearByYearPlot(years, mortalityMean, prenatalMean, 'Mortalidade infantil e acesso ao pré natal durante os anos')
-yearByYearPlot(years, [], prenatalMean, 'Acesso ao pré natal durante os anos')
-yearByYearPlot(years, mortalityMean, [], 'Mortalidade infantil durante os anos')
+#yearByYearPlot(years, [], prenatalMean, 'Acesso ao pré natal durante os anos')
+#yearByYearPlot(years, mortalityMean, [], 'Mortalidade infantil durante os anos')
