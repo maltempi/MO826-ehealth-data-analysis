@@ -13,7 +13,13 @@ See  extracted data from fiocruz -> [Click here](./fiocruz/)
 
 See extracted data from Ministério da Saúde  -> [Click here](./dados.gov)
 
+See the python script that generates a scatter chart about mortality rate in Brazil vs prenatal data -> [Click here](./src)
+
+
 ## Useful links 
+
+### Do you want to see the results and get more information about this repository? Check the following presentation link
+https://docs.google.com/presentation/d/1cHVvyiJTvdWGIz4VTLh1HJID0LlMNzrTGQz1PzGjlwU/edit?usp=sharing
 
 ### Link that describes how indexes are created
 http://www.proadess.icict.fiocruz.br/index.php?pag=fic&cod=M01&tab=1
